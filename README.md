@@ -4,10 +4,10 @@ BS,CSのトランスポンダに含まれるTSID一覧を取得するプログ�
 
 BS帯域再編（トランスポンダ間の移動）に伴い、録画コマンドのチャンネル設定ファイルを修正する必要が出てきます。変更点を確認し手作業で修正する作業が意外と煩雑なことから可能な範囲で自動化することを目的としています。
 
-動作確認環境は以下のとおりですが、px4_drvに対応したBS,CSの受信可能なチューナーであれば動作するはずです。
+動作確認環境は以下のとおりですが、[px4_drv][link_px4]に対応したBS,CSの受信可能なチューナーであれば動作するはずです。
 
 * Ubuntu 22.04
-* px4_drvのfork ([https://github.com/tsukumijima/px4_drv][link_tsukumijima])
+* [px4_drvのfork][link_tsukumijima]
 * DTV02-1T1S-U (Aなし初期型)
 
 ## インストール
@@ -82,6 +82,7 @@ BonDriverのチャンネル名は、BS放送に対して`BSxx/TSx`形式とし�
 * [PT3-Example-400改造版][link_sample3]
 * [BSトラポンデータ作成][link_trapon]
 
+[link_px4]: https://github.com/nns779/px4_drv
 [link_tsukumijima]: https://github.com/tsukumijima/px4_drv
 [link_bdpl]: https://github.com/u-n-k-n-o-w-n/BonDriverProxy_Linux
 [link_bonptx]: https://github.com/hendecarows/BonDriver_LinuxPTX
