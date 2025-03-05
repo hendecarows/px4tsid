@@ -25,6 +25,7 @@ public:
 
 private:
 	static std::string libdvbv5(const nlohmann::json& json);
+	static std::string libdvbv5lnb(const nlohmann::json& json);
 	static std::string bondriver_pt(const nlohmann::json& json);
 	static std::string bondriver_dvb(const nlohmann::json& json);
 	static std::string bondriver_ptx(const nlohmann::json& json);

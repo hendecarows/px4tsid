@@ -28,6 +28,7 @@ void Config::parse(int argc, char* argv[])
 	const std::unordered_set<std::string> formats{
 		"json",
 		"dvbv5",
+		"dvbv5lnb",
 		"bondvb",
 		"bonpt",
 		"bonptx",
@@ -121,13 +122,13 @@ std::string Config::usage(const std::string& argv0, const std::string& msg) cons
 		<< " [options] DEVICE\n"
 		<< "\n"
 		<< "options:\n"
-		<< "  --help                                              show this help message\n"
-		<< "  --lnb                                               enable LNB power\n"
-		<< "  --format={json,dvbv5,bondvb,bonpt,bonptx,bonpx4}    chset format\n"
-		<< "  --ignore=TSID0,TSID1...                             ignore TSIDs\n"
-		<< "  --ts-number-size=n                                  scan from 0 to n realtive TS number (4) (TS0,TS1,TS2,TS3)\n"
-		<< "  --retry-times=n                                     retry times scan PAT (5)\n"
-		<< "  DEVICE                                              px4_drv device file\n";
+		<< "  --help                     show this help message\n"
+		<< "  --lnb                      enable LNB power\n"
+		<< "  --format=str               chset format str={json,dvbv5,dvbv5lnb,bondvb,bonpt,bonptx,bonpx4}\n"
+		<< "  --ignore=TSID0,TSID1,...   ignore TSIDs\n"
+		<< "  --ts-number-size=n         scan from 0 to n realtive TS number (4) (TS0,TS1,TS2,TS3)\n"
+		<< "  --retry-times=n            retry times scan PAT (5)\n"
+		<< "  DEVICE                     px4_drv device file\n";
 
 	if (!msg.empty())
 	{
