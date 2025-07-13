@@ -49,6 +49,36 @@ libdvbv5形式で出力します。
 px4tsid --format dvbv5 /dev/isdb2056video0 > dvbv5_channels_isdbs.conf
 ```
 
+libdvbv5のLNB対応形式で出力します。
+
+```console
+px4tsid --format dvbv5lnb /dev/isdb2056video0 > dvbv5_channels_isdbs_lnb.conf
+```
+
+[mirakurun][link_mirakurun]のchannles.yml形式で出力します。
+
+```console
+px4tsid --format mirakurun /dev/isdb2056video0 > channels_isdbs.yml
+```
+
+libdvbv5形式でチャンネル名をTSIDで出力します。
+
+```console
+px4tsid --format dvbv5tsid /dev/isdb2056video0 > dvbv5_channels_isdbs_tsid.conf
+```
+
+libdvbv5のLNB対応で形式でチャンネル名をTSIDで出力します。
+
+```console
+px4tsid --format dvbv5lnb /dev/isdb2056video0 > dvbv5_channels_isdbs_lnb_tsid.conf
+```
+
+[mirakurun][link_mirakurun]のchannles.yml形式でチャンネル名をTSIDで出力します。
+
+```console
+px4tsid --format mirakuruntsid /dev/isdb2056video0 > channels_isdbs_tsid.yml
+```
+
 [BonDriver_DVB.conf][link_bdpl]形式で出力します。出力は`#ISDB_S`部分のみです。
 
 ```console
@@ -84,6 +114,7 @@ BonDriverのチャンネル名は、BS放送に対して`BSxx/TSx`形式とし�
 
 [link_px4]: https://github.com/nns779/px4_drv
 [link_tsukumijima]: https://github.com/tsukumijima/px4_drv
+[link_mirakurun]: https://github.com/Chinachu/Mirakurun
 [link_bdpl]: https://github.com/u-n-k-n-o-w-n/BonDriverProxy_Linux
 [link_bonptx]: https://github.com/hendecarows/BonDriver_LinuxPTX
 [link_bonpx4]: https://github.com/tsukumijima/px4_drv

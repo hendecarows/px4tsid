@@ -6,7 +6,6 @@
 #include <iostream>
 #include <iomanip>
 #include <sstream>
-#include <vector>
 
 #include "json.hpp"
 
@@ -19,36 +18,17 @@ namespace px4tsid
 
 std::string Convert::dump(const std::string& format, const nlohmann::json& json)
 {
-	if (format == "json")
+	if (convert_.count(format))
 	{
-		return json.dump(4);
-	}
-	else if (format == "dvbv5")
-	{
-		return libdvbv5(json);
-	}
-	else if (format == "dvbv5lnb")
-	{
-		return libdvbv5lnb(json);
-	}
-	else if (format == "bondvb")
-	{
-		return bondriver_dvb(json);
-	}
-	else if (format == "bonpt")
-	{
-		return bondriver_pt(json);
-	}
-	else if (format == "bonptx")
-	{
-		return bondriver_ptx(json);
-	}
-	else if (format == "bonpx4")
-	{
-		return bondriver_px4(json);
+		return convert_.at(format)(json);
 	}
 
 	throw std::runtime_error("failed to dump invalid format");
+}
+
+std::string Convert::json(const nlohmann::json& json)
+{
+	return json.dump(4);
 }
 
 std::string Convert::libdvbv5(const nlohmann::json& json)
@@ -65,9 +45,9 @@ std::string Convert::libdvbv5(const nlohmann::json& json)
 				auto tsid = c.transport_stream_id(tsnum);
 				if (tsid == 0xffff) continue;
 				os << "[BS" << std::setw(2) << std::setfill('0') << c.number() << "_" << tsnum << "]\n"
-					<< '\t' << "DELIVERY_SYSTEM = ISDBS\n"
-					<< '\t' << "FREQUENCY = " << c.frequency_if_khz() << '\n'
-					<< '\t' << "STREAM_ID = " << tsid << '\n';
+					<< "\tDELIVERY_SYSTEM = ISDBS\n"
+					<< "\tFREQUENCY = " << c.frequency_if_khz() << '\n'
+					<< "\tSTREAM_ID = " << tsid << '\n';
 			}
 		}
 	}
@@ -81,9 +61,9 @@ std::string Convert::libdvbv5(const nlohmann::json& json)
 			auto tsid = c.transport_stream_id(tsnum);
 			if (tsid == 0xffff) continue;
 			os << "[CS" << c.number() << "]\n"
-				<< '\t' << "DELIVERY_SYSTEM = ISDBS\n"
-				<< '\t' << "FREQUENCY = " << c.frequency_if_khz() << '\n'
-				<< '\t' << "STREAM_ID = " << tsid << '\n';
+				<< "\tDELIVERY_SYSTEM = ISDBS\n"
+				<< "\tFREQUENCY = " << c.frequency_if_khz() << '\n'
+				<< "\tSTREAM_ID = " << tsid << '\n';
 		}
 	}
 
@@ -104,10 +84,10 @@ std::string Convert::libdvbv5lnb(const nlohmann::json& json)
 				auto tsid = c.transport_stream_id(tsnum);
 				if (tsid == 0xffff) continue;
 				os << "[BS" << std::setw(2) << std::setfill('0') << c.number() << "_" << tsnum << "]\n"
-					<< '\t' << "DELIVERY_SYSTEM = ISDBS\n"
-					<< '\t' << "LNB = 110BS\n"
-					<< '\t' << "FREQUENCY = " << c.frequency_khz() << '\n'
-					<< '\t' << "STREAM_ID = " << tsid << '\n';
+					<< "\tDELIVERY_SYSTEM = ISDBS\n"
+					<< "\tLNB = 110BS\n"
+					<< "\tFREQUENCY = " << c.frequency_khz() << '\n'
+					<< "\tSTREAM_ID = " << tsid << '\n';
 			}
 		}
 	}
@@ -121,10 +101,165 @@ std::string Convert::libdvbv5lnb(const nlohmann::json& json)
 			auto tsid = c.transport_stream_id(tsnum);
 			if (tsid == 0xffff) continue;
 			os << "[CS" << c.number() << "]\n"
-				<< '\t' << "DELIVERY_SYSTEM = ISDBS\n"
-				<< '\t' << "LNB = 110BS\n"
-				<< '\t' << "FREQUENCY = " << c.frequency_khz() << '\n'
-				<< '\t' << "STREAM_ID = " << tsid << '\n';
+				<< "\tDELIVERY_SYSTEM = ISDBS\n"
+				<< "\tLNB = 110BS\n"
+				<< "\tFREQUENCY = " << c.frequency_khz() << '\n'
+				<< "\tSTREAM_ID = " << tsid << '\n';
+		}
+	}
+
+	return os.str();
+}
+
+std::string Convert::mirakurun(const nlohmann::json& json)
+{
+	std::ostringstream os;
+
+	if (json.at("BS").size() > 0)
+	{
+		for (const ChSet& c : json.at("BS"))
+		{
+			if (!c.has_lock()) continue;
+			for (size_t tsnum = 0; tsnum < c.transport_stream_id().size(); tsnum++)
+			{
+				auto tsid = c.transport_stream_id(tsnum);
+				if (tsid == 0xffff) continue;
+				os << "- name: BS" << std::setw(2) << std::setfill('0') << c.number() << '_' << tsnum << '\n'
+					<< "  type: BS\n"
+					<< "  channel: BS" << std::setw(2) << std::setfill('0') << c.number() << '_' << tsnum << '\n'
+					<< "  isDisabled: false\n";
+			}
+		}
+	}
+
+	if (json.at("CS").size() > 0)
+	{
+		for (const ChSet& c : json.at("CS"))
+		{
+			if (!c.has_lock()) continue;
+			auto tsid = c.transport_stream_id(0);
+			if (tsid == 0xffff) continue;
+			os << "- name: CS" << c.number() << '\n'
+				<< "  type: CS\n"
+				<< "  channel: CS"  << c.number() << '\n'
+				<< "  isDisabled: false\n";
+		}
+	}
+
+	return os.str();
+}
+
+std::string Convert::libdvbv5_tsid(const nlohmann::json& json)
+{
+	std::ostringstream os;
+
+	if (json.at("BS").size() > 0)
+	{
+		for (const ChSet& c : json.at("BS"))
+		{
+			if (!c.has_lock()) continue;
+			for (size_t tsnum = 0; tsnum < c.transport_stream_id().size(); tsnum++)
+			{
+				auto tsid = c.transport_stream_id(tsnum);
+				if (tsid == 0xffff) continue;
+				os << '[' << tsid << "]\n"
+					<< "\tDELIVERY_SYSTEM = ISDBS\n"
+					<< "\tFREQUENCY = " << c.frequency_if_khz() << '\n'
+					<< "\tSTREAM_ID = " << tsid << '\n';
+			}
+		}
+	}
+
+	if (json.at("CS").size() > 0)
+	{
+		for (const ChSet& c : json.at("CS"))
+		{
+			if (!c.has_lock()) continue;
+			auto tsnum = 0;
+			auto tsid = c.transport_stream_id(tsnum);
+			if (tsid == 0xffff) continue;
+			os << '[' << tsid << "]\n"
+				<< "\tDELIVERY_SYSTEM = ISDBS\n"
+				<< "\tFREQUENCY = " << c.frequency_if_khz() << '\n'
+				<< "\tSTREAM_ID = " << tsid << '\n';
+		}
+	}
+
+	return os.str();
+}
+
+std::string Convert::libdvbv5lnb_tsid(const nlohmann::json& json)
+{
+	std::ostringstream os;
+
+	if (json.at("BS").size() > 0)
+	{
+		for (const ChSet& c : json.at("BS"))
+		{
+			if (!c.has_lock()) continue;
+			for (size_t tsnum = 0; tsnum < c.transport_stream_id().size(); tsnum++)
+			{
+				auto tsid = c.transport_stream_id(tsnum);
+				if (tsid == 0xffff) continue;
+				os << '[' << tsid << "]\n"
+					<< "\tDELIVERY_SYSTEM = ISDBS\n"
+					<< "\tLNB = 110BS\n"
+					<< "\tFREQUENCY = " << c.frequency_khz() << '\n'
+					<< "\tSTREAM_ID = " << tsid << '\n';
+			}
+		}
+	}
+
+	if (json.at("CS").size() > 0)
+	{
+		for (const ChSet& c : json.at("CS"))
+		{
+			if (!c.has_lock()) continue;
+			auto tsid = c.transport_stream_id(0);
+			if (tsid == 0xffff) continue;
+			os << '[' << tsid << "]\n"
+				<< "\tDELIVERY_SYSTEM = ISDBS\n"
+				<< "\tLNB = 110BS\n"
+				<< "\tFREQUENCY = " << c.frequency_khz() << '\n'
+				<< "\tSTREAM_ID = " << tsid << '\n';
+		}
+	}
+
+	return os.str();
+}
+
+std::string Convert::mirakurun_tsid(const nlohmann::json& json)
+{
+	std::ostringstream os;
+
+	if (json.at("BS").size() > 0)
+	{
+		for (const ChSet& c : json.at("BS"))
+		{
+			if (!c.has_lock()) continue;
+			for (size_t tsnum = 0; tsnum < c.transport_stream_id().size(); tsnum++)
+			{
+				auto tsid = c.transport_stream_id(tsnum);
+				if (tsid == 0xffff) continue;
+				os << "- name: '" << tsid << "'\n"
+					<< "  type: BS\n"
+					<< "  channel: '" << tsid << "'\n"
+					<< "  isDisabled: false\n";
+			}
+		}
+	}
+
+	if (json.at("CS").size() > 0)
+	{
+		for (const ChSet& c : json.at("CS"))
+		{
+			if (!c.has_lock()) continue;
+			auto tsid = c.transport_stream_id(0);
+			if (tsid == 0xffff) continue;
+			os << "- name: '" << tsid << "'\n"
+				<< "  type: CS\n"
+				<< "  channel: '"  << tsid << "'\n"
+				<< "  isDisabled: false\n";
 		}
 	}
 
